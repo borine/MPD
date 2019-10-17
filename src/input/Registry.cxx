@@ -51,6 +51,10 @@
 #include "plugins/CdioParanoiaInputPlugin.hxx"
 #endif
 
+#ifdef ENABLE_MYTHTV
+#include "plugins/MythtvInputPlugin.hxx"
+#endif
+
 const InputPlugin *const input_plugins[] = {
 #ifdef ENABLE_ALSA
 	&input_plugin_alsa,
@@ -78,6 +82,9 @@ const InputPlugin *const input_plugins[] = {
 #endif
 #ifdef ENABLE_CDIO_PARANOIA
 	&input_plugin_cdio_paranoia,
+#endif
+#ifdef ENABLE_MYTHTV
+	&input_plugin_mythtv,
 #endif
 	nullptr
 };
