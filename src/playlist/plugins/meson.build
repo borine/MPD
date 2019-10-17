@@ -45,6 +45,11 @@ if enable_soundcloud
   playlist_plugins_deps += yajl_dep
 endif
 
+if mythtv_dep.found()
+  playlist_plugins_sources += 'MythtvPlaylistPlugin.cxx'
+  playlist_plugins_deps += mythtv_dep
+endif
+
 playlist_plugins = static_library(
   'playlist_plugins',
   playlist_plugins_sources,

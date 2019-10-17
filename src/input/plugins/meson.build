@@ -84,6 +84,10 @@ if enable_tidal
   ]
 endif
 
+if mythtv_dep.found()
+  input_plugins_sources += 'MythtvInputPlugin.cxx'
+endif
+
 input_plugins = static_library(
   'input_plugins',
   input_plugins_sources,
@@ -99,6 +103,7 @@ input_plugins = static_library(
     smbclient_dep,
     yajl_dep,
     crypto_md5_dep,
+    mythtv_dep,
   ],
 )
 
