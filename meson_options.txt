@@ -75,6 +75,7 @@ option('webdav', type: 'feature', description: 'WebDAV support using CURL and Ex
 #
 
 option('cue', type: 'boolean', value: true, description: 'CUE sheet support')
+option('mythtv', type: 'boolean', description: 'Mythtv support')
 
 #
 # Input plugins
