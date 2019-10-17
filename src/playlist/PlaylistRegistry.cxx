@@ -31,6 +31,7 @@
 #include "plugins/FlacPlaylistPlugin.hxx"
 #include "plugins/CuePlaylistPlugin.hxx"
 #include "plugins/EmbeddedCuePlaylistPlugin.hxx"
+#include "plugins/MythtvPlaylistPlugin.hxx"
 #include "input/InputStream.hxx"
 #include "util/MimeType.hxx"
 #include "util/StringView.hxx"
@@ -60,6 +61,9 @@ const PlaylistPlugin *const playlist_plugins[] = {
 #ifdef ENABLE_CUE
 	&cue_playlist_plugin,
 	&embcue_playlist_plugin,
+#endif
+#ifdef ENABLE_MYTHTV
+	&mythtv_playlist_plugin,
 #endif
 	nullptr
 };
