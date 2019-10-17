@@ -34,6 +34,8 @@ class MultiSocketMonitor;
  */
 class AlsaNonBlockPcm {
 	ReusableArray<pollfd> pfd_buffer;
+	pollfd *pfds;
+	int count;
 
 public:
 	/**
@@ -46,9 +48,10 @@ public:
 	 * Wrapper for snd_pcm_poll_descriptors_revents(), to be
 	 * called from MultiSocketMonitor::DispatchSockets().
 	 *
+	 * Returns true if there is an event to be dispatched.
 	 * Throws on error.
 	 */
-	void DispatchSockets(MultiSocketMonitor &m, snd_pcm_t *pcm);
+	bool DispatchSockets(MultiSocketMonitor &m, snd_pcm_t *pcm);
 };
 
 /**
@@ -57,6 +60,8 @@ public:
  */
 class AlsaNonBlockMixer {
 	ReusableArray<pollfd> pfd_buffer;
+	pollfd *pfds;
+	int count;
 
 public:
 	std::chrono::steady_clock::duration PrepareSockets(MultiSocketMonitor &m,
@@ -66,7 +71,7 @@ public:
 	 * Wrapper for snd_mixer_poll_descriptors_revents(), to be
 	 * called from MultiSocketMonitor::DispatchSockets().
 	 */
-	void DispatchSockets(MultiSocketMonitor &m, snd_mixer_t *mixer) noexcept;
+	bool DispatchSockets(MultiSocketMonitor &m, snd_mixer_t *mixer);
 };
 
 #endif

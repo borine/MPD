@@ -116,21 +116,25 @@ AlsaMixerMonitor::DispatchSockets() noexcept
 {
 	assert(mixer != nullptr);
 
-	non_block.DispatchSockets(*this, mixer);
-
-	int err = snd_mixer_handle_events(mixer);
-	if (err < 0) {
-		FormatError(alsa_mixer_domain,
-			    "snd_mixer_handle_events() failed: %s",
-			    snd_strerror(err));
-
-		if (err == -ENODEV) {
-			/* the sound device was unplugged; disable
-			   this GSource */
-			mixer = nullptr;
-			InvalidateSockets();
+	try {
+		if (! non_block.DispatchSockets(*this, mixer))
 			return;
+
+		int err = snd_mixer_handle_events(mixer);
+		if (err < 0) {
+			FormatError(alsa_mixer_domain,
+					"snd_mixer_handle_events() failed: %s",
+					snd_strerror(err));
+
+			if (err == -ENODEV) {
+				/* the sound device was unplugged; disable
+				   this GSource */
+				mixer = nullptr;
+				InvalidateSockets();
+			}
 		}
+	} catch(std::runtime_error e) {
+		LogError(alsa_mixer_domain, e.what());
 	}
 }
 

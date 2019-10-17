@@ -232,33 +232,37 @@ AlsaInputStream::PrepareSockets() noexcept
 void
 AlsaInputStream::DispatchSockets() noexcept
 {
-	non_block.DispatchSockets(*this, capture_handle);
-
 	const std::lock_guard<Mutex> protect(mutex);
 
-	auto w = PrepareWriteBuffer();
-	const snd_pcm_uframes_t w_frames = w.size / frame_size;
-	if (w_frames == 0) {
-		/* buffer is full */
-		Pause();
-		return;
-	}
-
-	snd_pcm_sframes_t n_frames;
-	while ((n_frames = snd_pcm_readi(capture_handle,
-					 w.data, w_frames)) < 0) {
-		if (n_frames == -EAGAIN)
+	try {
+		if (!non_block.DispatchSockets(*this, capture_handle))
 			return;
 
-		if (Recover(n_frames) < 0) {
-			postponed_exception = std::make_exception_ptr(std::runtime_error("PCM error - stream aborted"));
-			InvokeOnAvailable();
+		auto w = PrepareWriteBuffer();
+		const snd_pcm_uframes_t w_frames = w.size / frame_size;
+		if (w_frames == 0) {
+			/* buffer is full */
+			Pause();
 			return;
 		}
-	}
 
-	size_t nbytes = n_frames * frame_size;
-	CommitWriteBuffer(nbytes);
+		snd_pcm_sframes_t n_frames;
+		while ((n_frames = snd_pcm_readi(capture_handle,
+						 w.data, w_frames)) < 0) {
+			if (n_frames == -EAGAIN)
+				return;
+
+			if (Recover(n_frames) < 0)
+				throw std::runtime_error("PCM error - stream aborted");
+		}
+
+		size_t nbytes = n_frames * frame_size;
+		CommitWriteBuffer(nbytes);
+
+	} catch (...) {
+		postponed_exception = std::current_exception();
+		InvokeOnAvailable();
+	}
 }
 
 inline int

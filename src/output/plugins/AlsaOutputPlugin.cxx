@@ -1025,7 +1025,8 @@ AlsaOutput::PrepareSockets() noexcept
 void
 AlsaOutput::DispatchSockets() noexcept
 try {
-	non_block.DispatchSockets(*this, pcm);
+	if (!non_block.DispatchSockets(*this, pcm))
+		return;
 
 	if (must_prepare) {
 		must_prepare = false;

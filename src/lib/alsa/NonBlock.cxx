@@ -24,7 +24,7 @@
 std::chrono::steady_clock::duration
 AlsaNonBlockPcm::PrepareSockets(MultiSocketMonitor &m, snd_pcm_t *pcm)
 {
-	int count = snd_pcm_poll_descriptors_count(pcm);
+	count = snd_pcm_poll_descriptors_count(pcm);
 	if (count <= 0) {
 		if (count == 0)
 			throw std::runtime_error("snd_pcm_poll_descriptors_count() failed");
@@ -33,7 +33,7 @@ AlsaNonBlockPcm::PrepareSockets(MultiSocketMonitor &m, snd_pcm_t *pcm)
 						 snd_strerror(-count));
 	}
 
-	struct pollfd *pfds = pfd_buffer.Get(count);
+	pfds = pfd_buffer.Get(count);
 
 	count = snd_pcm_poll_descriptors(pcm, pfds, count);
 	if (count <= 0) {
@@ -48,43 +48,37 @@ AlsaNonBlockPcm::PrepareSockets(MultiSocketMonitor &m, snd_pcm_t *pcm)
 	return std::chrono::steady_clock::duration(-1);
 }
 
-void
+bool
 AlsaNonBlockPcm::DispatchSockets(MultiSocketMonitor &m,
 				 snd_pcm_t *pcm)
 {
-	int count = snd_pcm_poll_descriptors_count(pcm);
-	if (count <= 0)
-		return;
-
-	const auto pfds = pfd_buffer.Get(count), end = pfds + count;
-
-	auto *i = pfds;
-	m.ForEachReturnedEvent([&i, end](SocketDescriptor s, unsigned events){
-			if (i >= end)
-				return;
-
-			i->fd = s.Get();
-			i->events = i->revents = events;
-			++i;
+	m.ForEachReturnedEvent([this](SocketDescriptor s, unsigned events){
+			for (auto i = pfds; i < pfds + count; i++)
+				if (i->fd == s.Get()) {
+					i->revents = events;
+					break;
+				}
 		});
 
-	unsigned short dummy;
-	int err = snd_pcm_poll_descriptors_revents(pcm, pfds, i - pfds, &dummy);
-	if (err < 0)
+	unsigned short revents;
+	int err = snd_pcm_poll_descriptors_revents(pcm, pfds, count, &revents);
+	if (err < 0 && err != -EPIPE && err != -ESTRPIPE)
 		throw FormatRuntimeError("snd_pcm_poll_descriptors_revents() failed: %s",
 					 snd_strerror(-err));
+
+	return revents != 0;
 }
 
 std::chrono::steady_clock::duration
 AlsaNonBlockMixer::PrepareSockets(MultiSocketMonitor &m, snd_mixer_t *mixer) noexcept
 {
-	int count = snd_mixer_poll_descriptors_count(mixer);
+	count = snd_mixer_poll_descriptors_count(mixer);
 	if (count <= 0) {
 		m.ClearSocketList();
 		return std::chrono::steady_clock::duration(-1);
 	}
 
-	struct pollfd *pfds = pfd_buffer.Get(count);
+	pfds = pfd_buffer.Get(count);
 
 	count = snd_mixer_poll_descriptors(mixer, pfds, count);
 	if (count < 0)
@@ -94,26 +88,23 @@ AlsaNonBlockMixer::PrepareSockets(MultiSocketMonitor &m, snd_mixer_t *mixer) noe
 	return std::chrono::steady_clock::duration(-1);
 }
 
-void
+bool
 AlsaNonBlockMixer::DispatchSockets(MultiSocketMonitor &m,
-				   snd_mixer_t *mixer) noexcept
+				   snd_mixer_t *mixer)
 {
-	int count = snd_mixer_poll_descriptors_count(mixer);
-	if (count <= 0)
-		return;
-
-	const auto pfds = pfd_buffer.Get(count), end = pfds + count;
-
-	auto *i = pfds;
-	m.ForEachReturnedEvent([&i, end](SocketDescriptor s, unsigned events){
-			if (i >= end)
-				return;
-
-			i->fd = s.Get();
-			i->events = i->revents = events;
-			++i;
+	m.ForEachReturnedEvent([this](SocketDescriptor s, unsigned events){
+			for (auto i = pfds; i < pfds + count; i++)
+				if (i->fd == s.Get()) {
+					i->revents = events;
+					break;
+				}
 		});
 
-	unsigned short dummy;
-	snd_mixer_poll_descriptors_revents(mixer, pfds, i - pfds, &dummy);
+	unsigned short revents;
+	int err = snd_mixer_poll_descriptors_revents(mixer, pfds, count, &revents);
+	if (err < 0)
+		throw FormatRuntimeError("snd_mixer_poll_descriptors_revents() failed: %s",
+					 snd_strerror(-err));
+
+	return revents != 0;
 }
