@@ -165,6 +165,48 @@ Allows :program:`MPD` on Linux to play audio directly from a soundcard using the
    * - **auto_format yes|no**
      - If set to no, then libasound will not attempt to convert between different sample formats (16 bit, 24 bit, floating point, ...). Again the user must ensure that the requested format is available natively from the device.
 
+bluealsa
+--------
+
+Allows :program:`MPD` on Linux to play audio directly from a bluetooth source (e.g. mobile phone) using the scheme bluealsa://. This plugin uses the D-Bus interface of :program:`bluealsa` to capture audio using the A2DP bluetooth profile. See https://github.com/Arkq/bluez-alsa for information on the use of bluealsa. In spite of its name, this plugin does not use libasound or any other component of ALSA.
+
+The uri can optionally specify a bluetooth device address and/or a :program:`bluealsa` insance (by using the dbus suffix as set on the :program:`bluealsa` command line with ``--dbus=SUFFIX``. Examples:
+
+- play audio from one (unspecified) connected device:
+
+.. code-block:: none
+
+    mpc add bluealsa://
+
+- play audio from device XX:XX:XX:XX:XX:XX:
+
+.. code-block:: none
+
+    mpc add bluealsa://XX:XX:XX:XX:XX:XX
+
+- play audio from device XX:XX:XX:XX:XX:XX using a bluealsa instance started with ``--dbus=hci0``:
+
+.. code-block:: none
+
+    mpc add bluealsa://XX:XX:XX:XX:XX:XX/hci0
+
+- play audio from one (unspecified) connected device using a bluealsa instance started with ``--dbus=hci0``:
+
+.. code-block:: none
+
+    mpc add bluealsa:///hci0
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Setting
+     - Description
+   * - **default_address ADDRESS**
+     - The bluetooth device address to use if none is specified in the uri. If not set, or set to the empty string, then the first found connnected device is used
+   * - **default_dbus_suffix SUFFIX**
+     - The :program:`bluealsa` instance to use. If not set, or set to the empty string, then the default instance (i.e. with no suffix) is used.
+
 cdio_paranoia
 -------------
 
@@ -796,6 +838,24 @@ The ao plugin uses the portable `libao <https://www.xiph.org/ao/>`_ library. Use
      - Options to pass to the selected libao driver.
    * - **write_size O**
      - This specifies how many bytes to write to the audio device at once. This parameter is to work around a bug in older versions of libao on sound cards with very small buffers. The default is 1024.
+
+bluealsa
+--------
+
+The bluealsa plugin uses the D-Bus interface of :program:`bluealsa` on Linux to send output to a bluetooth speaker using the A2DP profile. See https://github.com/Arkq/bluez-alsa for information on the use of bluealsa. In spite of its name, this plugin does not use libasound or any other component of ALSA.
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Setting
+     - Description
+   * - **device XX:XX:XX:XX:XX:XX**
+     - Optional. The bluetooth address of the device to send output to. The device must be already paired and connected to the :program:`MPD` host. If omitted, or empty, the first found sink device is used.
+   * - **suffix NAME**
+     - Optional. Only required if the :program:`bluealsa` daemon is started with the option ``--dbus=NAME``.
+
+The according hardware mixer plugin does not have any specific configuration settings.
 
 sndio
 -----

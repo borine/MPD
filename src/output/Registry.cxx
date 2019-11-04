@@ -21,6 +21,7 @@
 #include "Registry.hxx"
 #include "OutputPlugin.hxx"
 #include "plugins/AlsaOutputPlugin.hxx"
+#include "plugins/BluealsaOutputPlugin.hxx"
 #include "plugins/AoOutputPlugin.hxx"
 #include "plugins/FifoOutputPlugin.hxx"
 #include "plugins/SndioOutputPlugin.hxx"
@@ -62,6 +63,9 @@ const AudioOutputPlugin *const audio_output_plugins[] = {
 #endif
 #ifdef ENABLE_ALSA
 	&alsa_output_plugin,
+#endif
+#ifdef ENABLE_BLUEALSA
+	&bluealsa_output_plugin,
 #endif
 #ifdef ENABLE_AO
 	&ao_output_plugin,
