@@ -173,6 +173,7 @@ option('solaris_output', type: 'feature', description: 'Solaris /dev/audio suppo
 # Misc libraries
 #
 
+option('bluealsa', type: 'feature', description: 'Bluealsa bluetooth support')
 option('dbus', type: 'feature', description: 'D-Bus support')
 option('expat', type: 'feature', description: 'Expat XML support')
 option('icu', type: 'feature', description: 'Use libicu for Unicode')
