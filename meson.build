@@ -333,6 +333,7 @@ subdir('src/lib/smbclient')
 subdir('src/lib/zlib')
 
 subdir('src/lib/alsa')
+subdir('src/lib/bluealsa')
 subdir('src/lib/chromaprint')
 subdir('src/lib/curl')
 subdir('src/lib/expat')

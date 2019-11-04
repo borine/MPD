@@ -27,6 +27,10 @@
 #include "plugins/AlsaInputPlugin.hxx"
 #endif
 
+#ifdef ENABLE_BLUEALSA
+#include "plugins/BluealsaInputPlugin.hxx"
+#endif
+
 #ifdef ENABLE_CURL
 #include "plugins/CurlInputPlugin.hxx"
 #endif
@@ -58,6 +62,9 @@
 const InputPlugin *const input_plugins[] = {
 #ifdef ENABLE_ALSA
 	&input_plugin_alsa,
+#endif
+#ifdef ENABLE_BLUEALSA
+	&input_plugin_bluealsa,
 #endif
 #ifdef ENABLE_TIDAL
 	&tidal_input_plugin,
