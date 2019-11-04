@@ -17,25 +17,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/** \file
- *
- * This header provides "extern" declarations for all mixer plugins.
- */
+#ifndef MPD_BLUEALSA_OUTPUT_PLUGIN_HXX
+#define MPD_BLUEALSA_OUTPUT_PLUGIN_HXX
 
-#ifndef MPD_MIXER_LIST_HXX
-#define MPD_MIXER_LIST_HXX
+class BluealsaOutput;
 
-struct MixerPlugin;
+extern const struct AudioOutputPlugin bluealsa_output_plugin;
 
-extern const MixerPlugin null_mixer_plugin;
-extern const MixerPlugin software_mixer_plugin;
-extern const MixerPlugin alsa_mixer_plugin;
-extern const MixerPlugin haiku_mixer_plugin;
-extern const MixerPlugin oss_mixer_plugin;
-extern const MixerPlugin osx_mixer_plugin;
-extern const MixerPlugin pulse_mixer_plugin;
-extern const MixerPlugin winmm_mixer_plugin;
-extern const MixerPlugin sndio_mixer_plugin;
-extern const MixerPlugin bluealsa_mixer_plugin;
+void
+bluealsa_output_set_volume(BluealsaOutput &output, unsigned volume);
+
+int
+bluealsa_output_get_volume(BluealsaOutput &output);
 
 #endif

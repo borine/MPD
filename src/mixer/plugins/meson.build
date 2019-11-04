@@ -34,6 +34,10 @@ if is_windows
   mixer_plugins_sources += 'WinmmMixerPlugin.cxx'
 endif
 
+if bluealsa_dep.found()
+  mixer_plugins_sources += 'BluealsaMixerPlugin.cxx'
+endif
+
 mixer_plugins = static_library(
   'mixer_plugins',
   mixer_plugins_sources,
@@ -42,6 +46,7 @@ mixer_plugins = static_library(
     alsa_dep,
     pulse_dep,
     libsndio_dep,
+	bluealsa_dep
   ]
 )
 

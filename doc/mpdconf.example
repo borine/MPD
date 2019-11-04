@@ -340,6 +340,16 @@ input {
 #	mixer_type      "none"			# optional
 #}
 #
+## An example of a bluealsa output (for bluetooth output on linux):
+#
+#audio_output {
+#	type		"bluealsa"
+#	name		"Bluetooth"
+##	device		"XX:XX:XX:XX:XX:XX"	# optional
+##	suffix		"mydbusname"	# optional
+##	mixer_type	"hardware" 	# optional
+#}
+
 ###############################################################################
 
 

@@ -62,6 +62,10 @@ template<>
 struct TypeTraits<dbus_uint32_t> : BasicTypeTraits<DBUS_TYPE_UINT32> {
 };
 
+template<>
+struct TypeTraits<dbus_uint16_t> : BasicTypeTraits<DBUS_TYPE_UINT16> {
+};
+
 using BooleanTypeTraits = BasicTypeTraits<DBUS_TYPE_BOOLEAN>;
 
 template<typename T>
