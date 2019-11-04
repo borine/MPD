@@ -45,10 +45,6 @@ if bluealsa_dep.found()
   mixer_plugins_sources += 'BluealsaMixerPlugin.cxx'
 endif
 
-if bluealsa_dep.found()
-  mixer_plugins_sources += 'BluealsaMixerPlugin.cxx'
-endif
-
 mixer_plugins = static_library(
   'mixer_plugins',
   mixer_plugins_sources,

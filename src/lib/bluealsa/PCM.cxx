@@ -100,6 +100,9 @@ PCM::OpenTransport()
 	                                            object_path.c_str(),
 	                                            PCM_INTERFACE, "Open");
 
+	const char *modestr = selected_mode == MODE_SOURCE ? "source" : "sink";
+	ODBus::AppendMessageIter(*msg.Get()).Append(modestr);
+
 	dbus_open_request.Send(service.Connection(), *msg.Get(),
 	             std::bind(&PCM::OnOpenReply,
 			         this, std::placeholders::_1));
