@@ -100,6 +100,9 @@ PCM::OpenTransport()
 	                                            object_path.c_str(),
 	                                            PCM_INTERFACE, "Open");
 
+	const char *modestr = selected_mode == MODE_SOURCE ? "source" : "sink";
+	ODBus::AppendMessageIter(*msg.Get()).Append(modestr);
+
 	dbus_open_request.Send(service.Connection(), *msg.Get(),
 	             std::bind(&PCM::OnOpenReply,
 			         this, std::placeholders::_1));
@@ -336,12 +339,26 @@ PCM::Match(ODBus::ReadMessageIter &&i)
 	return supported_modes & selected_mode;
 }
 
+static void
+GetAddressFromPath(const char *path, std::string &address)
+{
+	/* The path must end in "/dev_XX_XX_XX_XX_XX_XX/a2dp" */
+	static constexpr auto countback = strlen("XX_XX_XX_XX_XX_XX/a2dp");
+	static constexpr auto addrlen = strlen("XX_XX_XX_XX_XX_XX");
+	address.assign(path + strlen(path) - countback, addrlen);
+	std::replace(address.begin(), address.end(), '_', ':');
+}
+
 void
 PCM::ParsePCMArray(ODBus::ReadMessageIter &&i)
 {
 	for (; i.GetArgType() == DBUS_TYPE_DICT_ENTRY; i.Next()) {
-		if (Match(i.Recurse()))
+		if (Match(i.Recurse())) {
+			if (address.empty())
+				GetAddressFromPath(object_path.c_str(),
+				                                      address);
 			break;
+		}
 		Reset();
 	}
 }
