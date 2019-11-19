@@ -72,6 +72,10 @@ public:
 		return AppendBasic(DBUS_TYPE_UINT32, &value);
 	}
 
+	AppendMessageIter &Append(const uint16_t &value) {
+		return AppendBasic(DBUS_TYPE_UINT16, &value);
+	}
+
 	AppendMessageIter &AppendFixedArray(int element_type,
 					    const void *value,
 					    int n_elements) {
@@ -114,7 +118,7 @@ public:
 	AppendMessageIter &AppendVariant(const T &value) {
 		typedef VariantTypeTraits Traits;
 		return AppendMessageIter(*this, Traits::TYPE,
-					 Traits::TypeAsString::value)
+		             TypeTraits<T>::TypeAsString::value)
 			.Append(value)
 			.CloseContainer(*this);
 	}

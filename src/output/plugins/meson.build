@@ -14,6 +14,11 @@ if alsa_dep.found()
   output_plugins_sources += 'AlsaOutputPlugin.cxx'
 endif
 
+if bluealsa_dep.found()
+  output_plugins_sources += 'BluealsaOutputPlugin.cxx'
+  output_plugins_deps += [ dbus_dep ]
+endif
+
 libao_dep = dependency('ao', required: get_option('ao'))
 conf.set('ENABLE_AO', libao_dep.found())
 if libao_dep.found()
@@ -145,6 +150,7 @@ output_plugins = static_library(
   include_directories: inc,
   dependencies: [
     alsa_dep,
+	bluealsa_dep,
     audiounit_dep,
     libao_dep,
     libjack_dep,

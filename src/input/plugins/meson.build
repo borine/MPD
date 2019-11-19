@@ -6,6 +6,10 @@ if alsa_dep.found()
   input_plugins_sources += 'AlsaInputPlugin.cxx'
 endif
 
+if bluealsa_dep.found()
+  input_plugins_sources += 'BluealsaInputPlugin.cxx'
+endif
+
 libcdio_paranoia_dep = dependency('libcdio_paranoia', version: '>= 10.2+0.93+1', required: get_option('cdio_paranoia'))
 conf.set('ENABLE_CDIO_PARANOIA', libcdio_paranoia_dep.found())
 if libcdio_paranoia_dep.found()
@@ -90,6 +94,7 @@ input_plugins = static_library(
   include_directories: inc,
   dependencies: [
     alsa_dep,
+    bluealsa_dep,
     curl_dep,
     ffmpeg_dep,
     libcdio_paranoia_dep,
