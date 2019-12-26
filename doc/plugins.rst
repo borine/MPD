@@ -733,7 +733,37 @@ The `Advanced Linux Sound Architecture (ALSA) <http://www.alsa-project.org/>`_ p
    * - Setting
      - Description
    * - **device NAME**
-     - Sets the device which should be used. This can be any valid ALSA device name. The default value is "default", which makes libasound choose a device. It is recommended to use a "hw" or "plughw" device, because otherwise, libasound automatically enables "dmix", which has major disadvantages (fixed sample rate, poor resampler, ...).
+     - Sets the device which should be used. This can be any valid ALSA device name. The default value is "default".
+     - Device names are defined in libaound's own configuration files. The libasound source code defines "default" as an alias for "plughw:0,0"; but many Linux distributions re-define it. For example, may desktop distributions define it to be the pulseaudio sound server.
+     - It is recommended to specify a "hw" or "plughw" device here, so that you can be certain that libasound is not automatically enabling "dmix", or other modules which have major disadvantages (fixed sample rate, poor resampler, ...).
+     - hw and plughw device names consist of a card index or name, and a pcm index on that card. You can obtain a list of hardware pcm devices on a machine with:
+
+.. code-block:: none
+
+   username@host:~$ aplay -l
+   **** List of PLAYBACK Hardware Devices ****
+   card 0: PCH [HDA Intel PCH], device 0: ALC236 Analog [ALC236 Analog]
+     Subdevices: 1/1
+     Subdevice #0: subdevice #0
+   card 0: PCH [HDA Intel PCH], device 3: HDMI 0 [HDMI 0]
+     Subdevices: 1/1
+     Subdevice #0: subdevice #0
+
+    - For each card entry, the number after the word "card" is the card index, and the next string (after ":") is the card name. The number after the word "device" is the pcm index. So, for example, the first pcm device from the above can specified either as
+
+.. code-block:: none
+
+   hw:0,0
+
+       or
+
+.. code-block:: none
+
+   hw:CARD=PCH,DEV=0
+ 
+     - If you use removable sound cards (e.g. USB) it is recommended to use the card name form, as the card index number may change if multiple sound cards are connected. 
+     - The "hw:" label causes libasound pass the pcm stream directly to the hardware driverfor the card, with no resampling or filtering performed by libasound. Any necessary frmat conversion required by the card will have to be performed by MPD.
+     - The "plughw:" label causes libasound to perform any necessary audio format coversions before passing the stream to the driver. It is possible to prevent certain format coversions bt using the auto_* options listed below.
    * - **buffer_time US**
      - Sets the device's buffer time in microseconds. Don't change unless you know what you're doing.
    * - **period_time US**
@@ -760,9 +790,16 @@ The according hardware mixer plugin understands the following settings:
    * - Setting
      - Description
    * - **mixer_device DEVICE**
-     - Sets the ALSA mixer device name, defaulting to default which lets ALSA pick a value.
+     - Sets the ALSA mixer device name, defaulting to "default" which is a name defined in the libasound configuration. Typically it refers to the card used for the default pcm device (e.g "hw:0") if that card has mixer controls; but it may have be redefined so it should not be assumed to refer to the same card as the "default" pcm device.
+     -  It is recommended to explicitly set the mixer device here if using MPD's "hardware" mixer. For hw: and plughw: pcm devices, the associated mixer is referred to by the card index or name. For example:
+           hw:0
+        or
+           hw:PCH
    * - **mixer_control NAME**
-     - Choose a mixer control, defaulting to PCM. Type amixer scontrols to get a list of available mixer controls.
+     - Choose a mixer control, defaulting to PCM.
+     - Note that not all cards have a mixer control called "PCM" so it will often be necessary to set an explict value here.
+     - Type amixer scontrols to get a list of available mixer controls on the default card, or amixer -D hw:CARDNAME scontrols to get a list of scontrols on the card with index or name CARDNAME.
+     - In order to identify the appropriate scontrol to use it may be necessary to consult the documentation for your sound card.
    * - **mixer_index NUMBER**
      - Choose a mixer control index. This is necessary if there is more than one control with the same name. Defaults to 0 (the first one).
 
