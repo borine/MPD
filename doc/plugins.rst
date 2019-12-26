@@ -734,9 +734,9 @@ The `Advanced Linux Sound Architecture (ALSA) <http://www.alsa-project.org/>`_ p
      - Description
    * - **device NAME**
      - Sets the device which should be used. This can be any valid ALSA device name. The default value is "default".
-     - Device names are defined in libaound's own configuration files. The libasound source code defines "default" as an alias for "plughw:0,0"; but many Linux distributions re-define it. For example, may desktop distributions define it to be the pulseaudio sound server.
-     - It is recommended to specify a "hw" or "plughw" device here, so that you can be certain that libasound is not automatically enabling "dmix", or other modules which have major disadvantages (fixed sample rate, poor resampler, ...).
-     - hw and plughw device names consist of a card index or name, and a pcm index on that card. You can obtain a list of hardware pcm devices on a machine with:
+      Device names are defined in libaound's own configuration files. The libasound source code defines "default" as an alias for "plughw:0,0"; but many Linux distributions re-define it. For example, may desktop distributions define it to be the pulseaudio sound server.
+       It is recommended to specify a "hw" or "plughw" device here, so that you can be certain that libasound is not automatically enabling "dmix", or other modules which have major disadvantages (fixed sample rate, poor resampler, ...).
+       hw and plughw device names consist of a card index or name, and a pcm index on that card. You can obtain a list of hardware pcm devices on a machine with:
 
 .. code-block:: none
 
@@ -749,7 +749,7 @@ The `Advanced Linux Sound Architecture (ALSA) <http://www.alsa-project.org/>`_ p
      Subdevices: 1/1
      Subdevice #0: subdevice #0
 
-    - For each card entry, the number after the word "card" is the card index, and the next string (after ":") is the card name. The number after the word "device" is the pcm index. So, for example, the first pcm device from the above can specified either as
+      For each card entry, the number after the word "card" is the card index, and the next string (after ":") is the card name. The number after the word "device" is the pcm index. So, for example, the first pcm device from the above can specified either as
 
 .. code-block:: none
 
@@ -761,9 +761,9 @@ The `Advanced Linux Sound Architecture (ALSA) <http://www.alsa-project.org/>`_ p
 
    hw:CARD=PCH,DEV=0
  
-     - If you use removable sound cards (e.g. USB) it is recommended to use the card name form, as the card index number may change if multiple sound cards are connected. 
-     - The "hw:" label causes libasound pass the pcm stream directly to the hardware driverfor the card, with no resampling or filtering performed by libasound. Any necessary frmat conversion required by the card will have to be performed by MPD.
-     - The "plughw:" label causes libasound to perform any necessary audio format coversions before passing the stream to the driver. It is possible to prevent certain format coversions bt using the auto_* options listed below.
+       If you use removable sound cards (e.g. USB) it is recommended to use the card name form, as the card index number may change if multiple sound cards are connected. 
+       The "hw:" label causes libasound pass the pcm stream directly to the hardware driverfor the card, with no resampling or filtering performed by libasound. Any necessary frmat conversion required by the card will have to be performed by MPD.
+       The "plughw:" label causes libasound to perform any necessary audio format coversions before passing the stream to the driver. It is possible to prevent certain format coversions bt using the auto_* options listed below.
    * - **buffer_time US**
      - Sets the device's buffer time in microseconds. Don't change unless you know what you're doing.
    * - **period_time US**
