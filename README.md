@@ -27,6 +27,20 @@ Because this implementation uses bluealsa's __*D-Bus interface*__, *not its ALSA
 interface*, it does not suffer from the issues and limitations imposed by 
 libasound.
 
+### Build dependencies
+
+The bluealsa plugins require the libdbus-1 development library. On
+Debian / Ubuntu this package suffices:
+```
+libdbus-1-dev
+```
+
+Enable bluealsa in the build by adding
+`-Dbluealsa=enabled`
+to the meson command line
+
+### Runtime configuration
+
 Example mpd.conf:
 
 	# choose any connected bluetooth sink (most useful if only one at a time is connected). 
