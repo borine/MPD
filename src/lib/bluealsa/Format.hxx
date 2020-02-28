@@ -20,7 +20,7 @@
 #ifndef MPD_BLUEALSA_FORMAT_HXX
 #define MPD_BLUEALSA_FORMAT_HXX
 
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "util/ByteOrder.hxx"
 
 #include <cassert>

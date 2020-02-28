@@ -20,7 +20,7 @@
 
 #include "BluealsaInputPlugin.hxx"
 
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "config/Block.hxx"
 #include "event/Loop.hxx"
 #include "input/InputStream.hxx"
