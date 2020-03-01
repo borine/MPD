@@ -100,9 +100,6 @@ PCM::OpenTransport()
 	                                            object_path.c_str(),
 	                                            PCM_INTERFACE, "Open");
 
-	const char *modestr = selected_mode == MODE_SOURCE ? "source" : "sink";
-	ODBus::AppendMessageIter(*msg.Get()).Append(modestr);
-
 	dbus_open_request.Send(service.Connection(), *msg.Get(),
 	             std::bind(&PCM::OnOpenReply,
 			         this, std::placeholders::_1));
@@ -214,11 +211,44 @@ PCM::IsOpen() const noexcept
 
 bool PCM::MatchPath(const char *test_path) noexcept {
 	object_path.clear();
-	if (!StringEndsWith(test_path, "/a2dp"))
+	const char *p;
+	const char *encoded_addr;
+	size_t len;
+
+	/* path is [variable prefix]/hciX/dev_XX_XX_XX_XX_XX_XX/type/mode
+	 * we search back from the end to check type and obtain address */
+	static constexpr auto ADDR_LEN = 17;
+	static constexpr auto ADDR_COMPONENT_LEN = ADDR_LEN + 5;
+
+	p = StringFindLast(test_path, '/');
+	if (p == nullptr)
 		return false;
-	if (address.empty() ||
-		            StringFind(test_path, pattern.c_str()) != nullptr)
+	len = p - test_path;
+	/* ignore mode */
+
+	p = StringFindLast(test_path, '/', len - 1);
+	if (p == nullptr)
+		return false;
+	/* we are only interested in A2DP pcm objects */
+	if (!StringStartsWith(p + 1, "a2dp"))
+		return false;
+
+	len = p - test_path;
+	encoded_addr = StringFindLast(test_path, '/', len - 1);
+	if (encoded_addr == nullptr || p - encoded_addr != ADDR_COMPONENT_LEN)
+		return false;
+
+	encoded_addr += 5;
+
+	if (StringIsEqual(pattern.c_str(), encoded_addr, ADDR_LEN))
 		object_path = test_path;
+
+	if (pattern.empty()) {
+		address.assign(encoded_addr, ADDR_LEN);
+		std::replace(address.begin(), address.end(), '_', ':');
+		object_path = test_path;
+	}
+
 	return !object_path.empty();
 }
 
@@ -240,19 +270,23 @@ PCM::Populate(const char *name, ODBus::ReadMessageIter &&i)
 		if (StringFind(i.GetString(), pattern.c_str()) == nullptr)
 			throw std::runtime_error("Malformed response");
 	}
-	else if (StringIsEqual(name, "Modes")) {
-		if (i.GetArgType() != DBUS_TYPE_ARRAY)
+	else if (StringIsEqual(name, "Transport")) {
+		if (i.GetArgType() != DBUS_TYPE_STRING)
 			throw std::runtime_error("Malformed response");
-		i.Recurse().ForEach(DBUS_TYPE_STRING,
-		                            [this](ODBus::ReadMessageIter &j) {
-			const char *modestr = j.GetString();
-			if (StringIsEqual(modestr, "source"))
-				supported_modes |= MODE_SOURCE;
-			else if (StringIsEqual(modestr, "sink"))
-				supported_modes |= MODE_SINK;
-			else
-				throw std::runtime_error("Malformed response");
-		});
+		const char *transport_str = i.GetString();
+		if (!StringStartsWith(transport_str, "A2DP"))
+			throw std::runtime_error("Unsupported transport type");
+	}
+	else if (StringIsEqual(name, "Mode")) {
+		if (i.GetArgType() != DBUS_TYPE_STRING)
+			throw std::runtime_error("Malformed response");
+		const char *mode_str = i.GetString();
+		if (StringIsEqual(mode_str, "sink"))
+			supported_modes |= MODE_SOURCE;
+		else if (StringIsEqual(mode_str, "source"))
+			supported_modes |= MODE_SINK;
+		else
+			throw std::runtime_error("Unsupported mode");
 	}
 	else if (StringIsEqual(name, "Format")) {
 		if (i.GetArgType() != DBUS_TYPE_UINT16)
@@ -302,26 +336,12 @@ PCM::Match(ODBus::ReadMessageIter &&i)
 	return supported_modes & selected_mode;
 }
 
-static void
-GetAddressFromPath(const char *path, std::string &address)
-{
-	/* The path must end in "/dev_XX_XX_XX_XX_XX_XX/a2dp" */
-	static constexpr auto countback = strlen("XX_XX_XX_XX_XX_XX/a2dp");
-	static constexpr auto addrlen = strlen("XX_XX_XX_XX_XX_XX");
-	address.assign(path + strlen(path) - countback, addrlen);
-	std::replace(address.begin(), address.end(), '_', ':');
-}
-
 void
 PCM::ParsePCMArray(ODBus::ReadMessageIter &&i)
 {
 	for (; i.GetArgType() == DBUS_TYPE_DICT_ENTRY; i.Next()) {
-		if (Match(i.Recurse())) {
-			if (address.empty())
-				GetAddressFromPath(object_path.c_str(),
-				                                      address);
+		if (Match(i.Recurse()))
 			break;
-		}
 		Reset();
 	}
 }
