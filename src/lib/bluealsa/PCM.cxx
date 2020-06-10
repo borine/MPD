@@ -26,7 +26,7 @@
 #include "lib/dbus/AppendIter.hxx"
 #include "lib/dbus/ReadIter.hxx"
 #include "lib/dbus/ScopeMatch.hxx"
-#include "system/FileDescriptor.hxx"
+#include "io/FileDescriptor.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "util/RuntimeError.hxx"

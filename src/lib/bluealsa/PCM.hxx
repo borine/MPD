@@ -28,7 +28,7 @@
 #include "lib/dbus/Message.hxx"
 #include "lib/dbus/ReadIter.hxx"
 #include "lib/dbus/ScopeMatch.hxx"
-#include "system/FileDescriptor.hxx"
+#include "io/FileDescriptor.hxx"
 #include "thread/Mutex.hxx"
 
 #include <exception>
