@@ -20,6 +20,7 @@
 #include "config.h"
 #include "Registry.hxx"
 #include "OutputPlugin.hxx"
+#include "output/Features.h"
 #include "plugins/AlsaOutputPlugin.hxx"
 #include "plugins/BluealsaOutputPlugin.hxx"
 #include "plugins/AoOutputPlugin.hxx"
@@ -38,7 +39,12 @@
 #include "plugins/ShoutOutputPlugin.hxx"
 #include "plugins/sles/SlesOutputPlugin.hxx"
 #include "plugins/SolarisOutputPlugin.hxx"
+#ifdef ENABLE_WINMM_OUTPUT
 #include "plugins/WinmmOutputPlugin.hxx"
+#endif
+#ifdef ENABLE_WASAPI_OUTPUT
+#include "plugins/WasapiOutputPlugin.hxx"
+#endif
 #include "util/StringAPI.hxx"
 
 const AudioOutputPlugin *const audio_output_plugins[] = {
@@ -96,6 +102,9 @@ const AudioOutputPlugin *const audio_output_plugins[] = {
 #endif
 #ifdef ENABLE_WINMM_OUTPUT
 	&winmm_output_plugin,
+#endif
+#ifdef ENABLE_WASAPI_OUTPUT
+	&wasapi_output_plugin,
 #endif
 	nullptr
 };

@@ -20,12 +20,12 @@
 #include "MimeType.hxx"
 #include "SplitString.hxx"
 
-#include <string.h>
+#include <cstring>
 
 std::string
 GetMimeTypeBase(const char *s) noexcept
 {
-	const char *semicolon = strchr(s, ';');
+	const char *semicolon = std::strchr(s, ';');
 	return semicolon != nullptr
 		? std::string(s, semicolon)
 		: std::string(s);
@@ -45,8 +45,8 @@ ParseMimeTypeParameters(const char *s) noexcept
 		if (eq == i.npos)
 			continue;
 
-		result.insert(std::make_pair(std::string(&i.front(), eq),
-					     std::string(&i[eq + 1])));
+		result.insert(std::make_pair(i.substr(0, eq),
+					     i.substr(eq + 1)));
 	}
 
 	return result;

@@ -433,6 +433,8 @@ Video game music file emulator based on `game-music-emu <https://bitbucket.org/m
      - Description
    * - **accuracy yes|no**
      - Enable more accurate sound emulation.
+   * - **default_fade**
+     - The default fade-out time, in seconds. Used by songs that don't specify their own fade-out time.
 
 hybrid_dsd
 ----------
@@ -515,7 +517,7 @@ C64 SID decoder based on `libsidplayfp <https://sourceforge.net/projects/sidplay
    * - Setting
      - Description
    * - **songlength_database PATH**
-     - Location of your songlengths file, as distributed with the HVSC. The sidplay plugin checks this for matching MD5 fingerprints. See http://www.hvsc.c64.org/download/C64Music/DOCUMENTS/Songlengths.faq.
+     - Location of your songlengths file, as distributed with the HVSC. The sidplay plugin checks this for matching MD5 fingerprints. See http://www.hvsc.c64.org/download/C64Music/DOCUMENTS/Songlengths.faq. New songlength format support requires libsidplayfp 2.0 or later.
    * - **default_songlength SECONDS**
      - This is the default playing time in seconds for songs not in the songlength database, or in case you're not using a database. A value of 0 means play indefinitely.
    * - **default_genre GENRE**
@@ -1142,6 +1144,25 @@ The "Solaris" plugin runs only on SUN Solaris, and plays via /dev/audio.
      - Description
    * - **device PATH**
      - Sets the path of the audio device, defaults to /dev/audio.
+
+
+wasapi
+------
+
+The `Windows Audio Session API <https://docs.microsoft.com/en-us/windows/win32/coreaudio/wasapi>`_ plugin uses WASAPI, which is supported started from Windows Vista. It is recommended if you are using Windows.
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Setting
+     - Description
+   * - **device NAME**
+     - Sets the device which should be used. This can be any valid audio device name, or index number. The default value is "", which makes WASAPI choose the default output device.
+   * - **enumerate yes|no**
+     - Enumerate all devices in log while playing started. Useful for device configuration. The default value is "no".
+   * - **exclusive yes|no**
+     - Exclusive mode blocks all other audio source, and get best audio quality without resampling. Stopping playing release the exclusive control of the output device. The default value is "no".
 
 
 .. _filter_plugins:

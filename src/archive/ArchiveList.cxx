@@ -17,9 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "ArchiveList.hxx"
 #include "ArchivePlugin.hxx"
+#include "archive/Features.h"
 #include "util/StringUtil.hxx"
 #include "plugins/Bzip2ArchivePlugin.hxx"
 #include "plugins/Iso9660ArchivePlugin.hxx"
@@ -43,8 +43,12 @@ const ArchivePlugin *const archive_plugins[] = {
 	nullptr
 };
 
+static constexpr std::size_t n_archive_plugins = std::size(archive_plugins) - 1;
+
 /** which plugins have been initialized successfully? */
-static bool archive_plugins_enabled[std::size(archive_plugins) - 1];
+/* the std::max() is just here to avoid a zero-sized array, which is
+   forbidden in C++ */
+static bool archive_plugins_enabled[std::max(n_archive_plugins, std::size_t(1))];
 
 #define archive_plugins_for_each_enabled(plugin) \
 	archive_plugins_for_each(plugin) \

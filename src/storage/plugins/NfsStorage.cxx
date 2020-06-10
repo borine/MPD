@@ -90,9 +90,9 @@ public:
 
 	std::unique_ptr<StorageDirectoryReader> OpenDirectory(std::string_view uri_utf8) override;
 
-	std::string MapUTF8(std::string_view uri_utf8) const noexcept override;
+	[[nodiscard]] std::string MapUTF8(std::string_view uri_utf8) const noexcept override;
 
-	std::string_view MapToRelativeUTF8(std::string_view uri_utf8) const noexcept override;
+	[[nodiscard]] std::string_view MapToRelativeUTF8(std::string_view uri_utf8) const noexcept override;
 
 	/* virtual methods from NfsLease */
 	void OnNfsConnectionReady() noexcept final {
@@ -412,7 +412,7 @@ CreateNfsStorageURI(EventLoop &event_loop, const char *base)
 	if (p == nullptr)
 		return nullptr;
 
-	const char *mount = strchr(p, '/');
+	const char *mount = std::strchr(p, '/');
 	if (mount == nullptr)
 		throw std::runtime_error("Malformed nfs:// URI");
 

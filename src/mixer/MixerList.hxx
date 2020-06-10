@@ -36,6 +36,7 @@ extern const MixerPlugin oss_mixer_plugin;
 extern const MixerPlugin osx_mixer_plugin;
 extern const MixerPlugin pulse_mixer_plugin;
 extern const MixerPlugin winmm_mixer_plugin;
+extern const MixerPlugin wasapi_mixer_plugin;
 extern const MixerPlugin sndio_mixer_plugin;
 extern const MixerPlugin bluealsa_mixer_plugin;
 

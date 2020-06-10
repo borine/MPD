@@ -29,18 +29,12 @@
 #include "thread/Mutex.hxx"
 #include "event/DeferEvent.hxx"
 
-#include <upnp.h>
-
 #include <boost/intrusive/list.hpp>
 
 #include <list>
 #include <vector>
 #include <string>
 #include <chrono>
-
-#if UPNP_VERSION < 10800
-#define UpnpDiscovery Upnp_Discovery
-#endif
 
 class ContentDirectoryService;
 

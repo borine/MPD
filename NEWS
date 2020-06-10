@@ -13,14 +13,18 @@ ver 0.22 (not yet released)
     linux
   - curl: support "charset" parameter in URI fragment
   - ffmpeg: allow partial reads
+  - io_uring: new plugin for local files on Linux (using liburing)
 * archive
   - iso9660: support seeking
+* database
+  - upnp: drop support for libupnp versions older than 1.8
 * playlist
   - cue: integrate contents in database
 * decoder
   - mad: remove option "gapless", always do gapless
   - sidplay: add option "default_genre"
   - sidplay: map SID name field to "Album" tag
+  - sidplay: add support for new song length format with libsidplayfp 2.0
   - vorbis, opus: improve seeking accuracy
 * playlist
   - flac: support reading CUE sheets from remote FLAC files
@@ -34,9 +38,45 @@ ver 0.22 (not yet released)
   - jack: add option "auto_destination_ports"
   - jack: report error details
   - pulse: add option "media_role"
+  - solaris: support S8 and S32
 * lower the real-time priority from 50 to 40
 * switch to C++17
   - GCC 7 or clang 4 (or newer) recommended
+
+ver 0.21.24 (not yet released)
+* protocol
+  - "tagtypes" requires no permissions
+* database
+  - simple: fix crash when mounting twice
+* decoder
+  - modplug: fix Windows build failure
+  - wildmidi: attempt to detect WildMidi using pkg-config
+  - wildmidi: fix Windows build failure
+* Android
+  - enable the decoder plugins ModPlug and WildMidi
+  - fix build failure with Android NDK r21
+* Windows
+  - enable the decoder plugins ModPlug and WildMidi
+  - work around Meson bug breaking the Windows build with GCC 10
+* fix unit test failure
+
+ver 0.21.23 (2020/04/23)
+* protocol
+  - add tag fallback for AlbumSort
+* storage
+  - curl: fix corrupt "href" values in the presence of XML entities
+  - curl: unescape "href" values
+* input
+  - nfs: fix crash bug
+  - nfs: fix freeze bug on reconnect
+* decoder
+  - gme: adapt to API change in the upcoming version 0.7.0
+* output
+  - alsa: implement channel mapping for 5.0 and 7.0
+* player
+  - drain outputs at end of song in "single" mode
+* Windows
+  - fix case insensitive search
 
 ver 0.21.22 (2020/04/02)
 * database

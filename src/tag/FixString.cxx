@@ -19,10 +19,12 @@
 
 #include "FixString.hxx"
 #include "util/Alloc.hxx"
+#include "util/CharUtil.hxx"
 #include "util/WritableBuffer.hxx"
 #include "util/StringView.hxx"
 #include "util/UTF8.hxx"
 
+#include <algorithm>
 #include <cassert>
 
 #include <stdlib.h>
@@ -84,17 +86,11 @@ fix_utf8(StringView p)
 	return patch_utf8(p, invalid);
 }
 
-static bool
-char_is_non_printable(unsigned char ch)
-{
-	return ch < 0x20;
-}
-
 static const char *
 find_non_printable(StringView p)
 {
 	for (const char &ch : p)
-		if (char_is_non_printable(ch))
+		if (IsNonPrintableASCII(ch))
 			return &ch;
 
 	return nullptr;
@@ -114,15 +110,29 @@ clear_non_printable(StringView src)
 	char *dest = (char *)xmemdup(src.data, src.size);
 
 	for (size_t i = first - src.data; i < src.size; ++i)
-		if (char_is_non_printable(dest[i]))
+		if (IsNonPrintableASCII(dest[i]))
 			dest[i] = ' ';
 
 	return { dest, src.size };
 }
 
+gcc_pure
+static bool
+IsSafe(StringView s) noexcept
+{
+	return std::all_of(s.begin(), s.end(),
+			   [](char ch){
+				   return IsASCII(ch) && IsPrintableASCII(ch);
+			   });
+}
+
 WritableBuffer<char>
 FixTagString(StringView p)
 {
+	if (IsSafe(p))
+		/* optimistic optimization for the common case */
+		return nullptr;
+
 	auto utf8 = fix_utf8(p);
 	if (!utf8.IsNull())
 		p = {utf8.data, utf8.size};

@@ -389,7 +389,9 @@ Querying :program:`MPD`'s status
 
 :command:`currentsong`
     Displays the song info of the current song (same song that
-    is identified in status).
+    is identified in status). Information about the current song
+    is represented by key-value pairs, one on each line. The first
+    pair must be the `file` key-value pair.
 
 .. _command_idle:
 
@@ -413,6 +415,8 @@ Querying :program:`MPD`'s status
     - ``sticker``: the sticker database has been modified.
     - ``subscription``: a client has subscribed or unsubscribed to a channel
     - ``message``: a message was received on a channel this client is subscribed to; this event is only emitted when the queue is empty
+    - ``neighbor``: a neighbor was found or lost
+    - ``mount``: the mount list has changed
 
     Change events accumulate, even while the connection is not in
     "idle" mode; no events gets lost while the client is doing
@@ -1090,8 +1094,8 @@ access NFS and SMB servers.
 Multiple storages can be "mounted" together, similar to the
 `mount` command on many operating
 systems, but without cooperation from the kernel.  No
-superuser privileges are necessary, beause this mapping exists
-only inside the :program:`MPD` process
+superuser privileges are necessary, because this mapping exists
+only inside the :program:`MPD` process.
 
 .. _command_mount:
 

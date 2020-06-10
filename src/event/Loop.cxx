@@ -23,6 +23,12 @@
 #include "DeferEvent.hxx"
 #include "util/ScopeExit.hxx"
 
+#ifdef HAVE_URING
+#include "UringManager.hxx"
+#include "util/PrintException.hxx"
+#include <stdio.h>
+#endif
+
 EventLoop::EventLoop(ThreadId _thread)
 	:SocketMonitor(*this),
 	 /* if this instance is hosted by an EventThread (no ThreadId
@@ -43,6 +49,25 @@ EventLoop::~EventLoop() noexcept
 	assert(timers.empty());
 }
 
+#ifdef HAVE_URING
+
+Uring::Queue *
+EventLoop::GetUring() noexcept
+{
+	if (!uring_initialized) {
+		try {
+			uring = std::make_unique<Uring::Manager>(*this);
+		} catch (...) {
+			fprintf(stderr, "Failed to initialize io_uring: ");
+			PrintException(std::current_exception());
+		}
+	}
+
+	return uring.get();
+}
+
+#endif
+
 void
 EventLoop::Break() noexcept
 {
@@ -55,7 +80,7 @@ EventLoop::Break() noexcept
 bool
 EventLoop::Abandon(int _fd, SocketMonitor &m)  noexcept
 {
-	assert(IsInside());
+	assert(!IsAlive() || IsInside());
 
 	poll_result.Clear(&m);
 	return poll_group.Abandon(_fd);
@@ -64,7 +89,7 @@ EventLoop::Abandon(int _fd, SocketMonitor &m)  noexcept
 bool
 EventLoop::RemoveFD(int _fd, SocketMonitor &m) noexcept
 {
-	assert(IsInside());
+	assert(!IsAlive() || IsInside());
 
 	poll_result.Clear(&m);
 	return poll_group.Remove(_fd);
@@ -155,6 +180,15 @@ EventLoop::Run() noexcept
 
 	SocketMonitor::Schedule(SocketMonitor::READ);
 	AtScopeExit(this) {
+#ifdef HAVE_URING
+		/* make sure that the Uring::Manager gets destructed
+		   from within the EventThread, or else its
+		   destruction in another thread will cause assertion
+		   failures */
+		uring.reset();
+		uring_initialized = false;
+#endif
+
 		SocketMonitor::Cancel();
 	};
 

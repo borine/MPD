@@ -37,9 +37,11 @@
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/StandardDirectory.hxx"
+#include "io/uring/Features.h"
 #include "util/Domain.hxx"
 #include "util/OptionDef.hxx"
 #include "util/OptionParser.hxx"
+#include "Version.h"
 
 #ifdef _WIN32
 #include "system/Error.hxx"
@@ -57,6 +59,7 @@
 #include "neighbor/NeighborPlugin.hxx"
 #endif
 
+#include "encoder/Features.h"
 #ifdef ENABLE_ENCODER
 #include "encoder/EncoderList.hxx"
 #include "encoder/EncoderPlugin.hxx"
@@ -201,6 +204,9 @@ static void version()
 	       "\n"
 	       "Input plugins:\n"
 	       " file"
+#ifdef HAVE_URING
+	       " io_uring"
+#endif
 #ifdef ENABLE_ARCHIVE
 	       " archive"
 #endif

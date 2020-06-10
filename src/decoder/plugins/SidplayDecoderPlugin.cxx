@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "SidplayDecoderPlugin.hxx"
+#include "decoder/Features.h"
 #include "../DecoderAPI.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Builder.hxx"
@@ -59,10 +59,6 @@
 #include <memory>
 
 #include <string.h>
-
-#ifdef HAVE_SIDPLAYFP
-#define LIBSIDPLAYFP_VERSION GCC_MAKE_VERSION(LIBSIDPLAYFP_VERSION_MAJ, LIBSIDPLAYFP_VERSION_MIN, LIBSIDPLAYFP_VERSION_LEV)
-#endif
 
 #define SUBTUNE_PREFIX "tune_"
 
@@ -219,11 +215,24 @@ get_song_length(T &tune) noexcept
 	if (sidplay_global->songlength_database == nullptr)
 		return SignedSongTime::Negative();
 
-	const auto length = sidplay_global->songlength_database->length(tune);
-	if (length < 0)
+#if LIBSIDPLAYFP_VERSION_MAJ >= 2
+	const auto lengthms =
+		sidplay_global->songlength_database->lengthMs(tune);
+	/* check for new song length format since HVSC#68 or later */
+	if (lengthms < 0)
+	{
+#endif
+		/* old song lenghth format */
+		const auto length =
+			sidplay_global->songlength_database->length(tune);
+		if (length >= 0)
+			return SignedSongTime::FromS(length);
 		return SignedSongTime::Negative();
 
-	return SignedSongTime::FromS(length);
+#if LIBSIDPLAYFP_VERSION_MAJ >= 2
+	}
+	return SignedSongTime::FromMS(lengthms);
+#endif
 }
 
 static void
@@ -352,11 +361,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 #endif
 
 #ifdef HAVE_SIDPLAYFP
-#if LIBSIDPLAYFP_VERSION >= GCC_MAKE_VERSION(1,8,0)
 	const bool stereo = tune.getInfo()->sidChips() >= 2;
-#else
-	const bool stereo = tune.getInfo()->isStereo();
-#endif
 #else
 	const bool stereo = tune.isStereo();
 #endif

@@ -5,7 +5,12 @@ project(
   meson_version: '>= 0.49.0',
   default_options: [
     'c_std=c99',
-    'cpp_std=c++17'
+    'cpp_std=c++17',
+    'warning_level=3',
+
+    # This is only here to build subprojects as static libraries; MPD
+    # itself doesn't ship any libraries.
+    'default_library=static',
   ],
   license: 'GPLv2+',
 )
@@ -15,18 +20,20 @@ version_cxx = vcs_tag(input: 'src/GitVersion.cxx', output: 'GitVersion.cxx')
 compiler = meson.get_compiler('cpp')
 c_compiler = meson.get_compiler('c')
 
-if compiler.get_id() == 'gcc' and compiler.version().version_compare('<7')
-  warning('Your GCC version is too old.  You need at least version 7.')
-elif compiler.get_id() == 'clang' and compiler.version().version_compare('<4')
-  warning('Your clang version is too old.  You need at least version 4.')
+if compiler.get_id() == 'gcc' and compiler.version().version_compare('<8')
+  warning('Your GCC version is too old.  You need at least version 8.')
+elif compiler.get_id() == 'clang' and compiler.version().version_compare('<5')
+  warning('Your clang version is too old.  You need at least version 5.')
 endif
 
+version_conf = configuration_data()
+version_conf.set_quoted('PACKAGE', meson.project_name())
+version_conf.set_quoted('PACKAGE_NAME', meson.project_name())
+version_conf.set_quoted('VERSION', meson.project_version())
+version_conf.set_quoted('PROTOCOL_VERSION', '0.22.0')
+configure_file(output: 'Version.h', configuration: version_conf)
+
 conf = configuration_data()
-conf.set_quoted('PACKAGE', meson.project_name())
-conf.set_quoted('PACKAGE_NAME', meson.project_name())
-conf.set_quoted('PACKAGE_VERSION', meson.project_version())
-conf.set_quoted('VERSION', meson.project_version())
-conf.set_quoted('PROTOCOL_VERSION', '0.22.0')
 conf.set_quoted('SYSTEM_CONFIG_FILE_LOCATION', join_paths(get_option('prefix'), get_option('sysconfdir'), 'mpd.conf'))
 
 common_cppflags = [
@@ -40,9 +47,6 @@ common_cxxflags = [
 ]
 
 test_common_flags = [
-  '-Wall',
-  '-Wextra',
-
   '-Wvla',
 
   '-fvisibility=hidden',
@@ -151,7 +155,13 @@ conf.set('HAVE_GETPWNAM_R', compiler.has_function('getpwnam_r'))
 conf.set('HAVE_GETPWUID_R', compiler.has_function('getpwuid_r'))
 conf.set('HAVE_INITGROUPS', compiler.has_function('initgroups'))
 conf.set('HAVE_FNMATCH', compiler.has_function('fnmatch'))
-conf.set('HAVE_STRNDUP', compiler.has_function('strndup', prefix: '#define _GNU_SOURCE\n#include <string.h>'))
+
+# Explicitly exclude Windows in this check because
+# https://github.com/mesonbuild/meson/issues/3672 (reported in 2018,
+# still not fixed in 2020) causes Meson to believe it exists, because
+# __builtin_strndup() exists (but strndup() still cannot be used).
+conf.set('HAVE_STRNDUP', not is_windows and compiler.has_function('strndup', prefix: '#define _GNU_SOURCE\n#include <string.h>'))
+
 conf.set('HAVE_STRCASESTR', compiler.has_function('strcasestr'))
 
 conf.set('HAVE_PRCTL', is_linux)
@@ -331,6 +341,8 @@ endif
 
 subdir('src/util')
 subdir('src/time')
+subdir('src/io')
+subdir('src/io/uring')
 subdir('src/system')
 subdir('src/thread')
 subdir('src/net')
