@@ -21,6 +21,7 @@ class StartDelayFilter final : public Filter {
 	std::byte noise_buffer[NOISE_BUFFER_BYTES];
 	std::span<const std::byte> initial_data;
 	std::size_t noise_bytes_read;
+	bool on_seek;
 
 public:
 	/**
@@ -29,12 +30,14 @@ public:
 	 */
 	StartDelayFilter(const AudioFormat &audio_format,
 			 std::chrono::milliseconds time,
-			 std::uint8_t level) noexcept;
+			 std::uint8_t level,
+			 bool on_seek) noexcept;
 
 	/* virtual methods from class Filter */
 	std::span<const std::byte> FilterPCM(std::span<const std::byte> src) override;
 	std::span<const std::byte> ReadMore() override;
 	std::span<const std::byte> Flush() override;
+	void Reset() noexcept override;
 
 private:
 	void CreateNoise(SampleFormat format, std::uint8_t level) noexcept;

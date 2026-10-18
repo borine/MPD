@@ -1501,13 +1501,15 @@ DSD formatted streams.
 
    * - Setting
      - Description
-   * - **delay_ms "MS"**
-     - The delay time in milliseconds. The default delay is :samp:`1250` ms.
-   * - **noise_level "LEVEL"**
+   * - **delay_ms MS**
+     - The delay time in milliseconds. The default delay is ``1250`` ms.
+   * - **noise_level LEVEL**
      - Sets the loudness of the noise inserted during the delay, in
-       the range [ 0 - 255 ]. Use the value :samp:`0` for silence. The
-       default value is :samp:`1`.
-
+       the range ``[ 0 - 255 ]``. Use the value ``0`` for silence. The
+       default value is ``1``.
+   * - **on_seek yes|no**
+     - When ``yes`` also delay the start after seeking. The default
+       value is ``no``.
 
 .. _playlist_plugins:
 

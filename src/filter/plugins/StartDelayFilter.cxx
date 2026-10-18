@@ -19,11 +19,13 @@ GetSampleBits(SampleFormat format) noexcept
 
 StartDelayFilter::StartDelayFilter(const AudioFormat &audio_format,
 			 std::chrono::milliseconds time,
-			 std::uint8_t level) noexcept
+			 std::uint8_t level,
+			 bool _on_seek) noexcept
 				:Filter(audio_format),
 				 noise_bytes(audio_format.TimeToSize(time)),
 				 initial_data(),
-				 noise_bytes_read(0)
+				 noise_bytes_read(0),
+				 on_seek(_on_seek)
 {
 	if (level > 0)
 		CreateNoise(audio_format.format, level);
@@ -120,4 +122,14 @@ std::span<const std::byte>
 StartDelayFilter::Flush()
 {
 	return ReadMore();
+}
+
+void
+StartDelayFilter::Reset() noexcept
+{
+	if (on_seek)
+	{
+		initial_data = {};
+		noise_bytes_read = 0;
+	}
 }
