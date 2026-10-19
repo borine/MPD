@@ -6,6 +6,6 @@
 
 struct FilterPlugin;
 
-extern const FilterPlugin start_delay_filter_plugin;
+extern const FilterPlugin startdelay_filter_plugin;
 
 #endif

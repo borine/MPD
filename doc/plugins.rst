@@ -12,13 +12,13 @@ simple
 The default plugin. Stores a copy of the database in memory. A file is used for permanent storage.
 
 .. list-table::
-   :widths: 20 80
+   :widths: 20 80                     
    :header-rows: 1
 
    * - Setting
      - Description
    * - **path**
-     - The path of the database file.
+     - The path of the database file. 
    * - **cache_directory**
      - The path of the cache directory for additional storages mounted at runtime. This setting is necessary for the **mount** protocol command.
    * - **compress yes|no**
@@ -42,7 +42,7 @@ runs a :program:`MPD` (0.20 or newer) instance. Only the file server
 needs to update the database.
 
 .. list-table::
-   :widths: 20 80
+   :widths: 20 80                     
    :header-rows: 1
 
    * - Setting
@@ -375,7 +375,7 @@ in the form ``qobuz://track/ID``, e.g.:
      - The `Qobuz format identifier <https://github.com/Qobuz/api-documentation/blob/master/endpoints/track/getFileUrl.md#parameters>`_, i.e. a number which chooses the format and quality to be requested from Qobuz. The default is "5" (320 kbit/s MP3).
 
 .. _decoder_plugins:
-
+     
 Decoder plugins
 ===============
 
@@ -697,7 +697,7 @@ MIDI decoder based on `libwildmidi <http://www.mindwerks.net/projects/wildmidi/>
      - The absolute path of the timidity config file. Defaults to :file:`/etc/timidity/timidity.cfg`.
 
 .. _encoder_plugins:
-
+     
 Encoder plugins
 ===============
 
@@ -970,7 +970,7 @@ The `Advanced Linux Sound Architecture (ALSA) <http://www.alsa-project.org/>`_ p
        playback.
    * - **allowed_formats F1 F2 ...**
      - Specifies a list of allowed audio formats, separated by a space. All items may contain asterisks as a wild card, and may be followed by "=dop" to enable DoP (DSD over PCM) for this particular format. The first matching format is used, and if none matches, MPD chooses the best fallback of this list.
-
+       
        Example: "96000:16:* 192000:24:* dsd64:*=dop *:dsd:*".
 
    * - **close_on_pause yes|no**
@@ -1553,7 +1553,7 @@ Reads music links from :file:`.rss` files.
 
 xspf
 ----
-Reads XSPF playlist files.
+Reads XSPF playlist files. 
 
 
 .. _archive_plugins:
