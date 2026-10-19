@@ -8,8 +8,7 @@
 
 #include <cstring>
 
-static
-unsigned
+static unsigned
 GetSampleBits(SampleFormat format) noexcept
 {
 	if (format == SampleFormat::S24_P32)

@@ -8,6 +8,7 @@
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
 #include "config/Block.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 
 static constexpr unsigned START_DELAY_DEFAULT_MS = 1250;
 
@@ -15,18 +16,15 @@ static constexpr unsigned START_DELAY_DEFAULT_MS = 1250;
 static constexpr unsigned START_DELAY_NOISE_LEVEL_DEFAULT = 1;
 static constexpr unsigned START_DELAY_NOISE_LEVEL_MAX = 255;
 
-[[gnu::pure]]
-static bool
-FormatSupported(const AudioFormat &audio_format) noexcept
-{
-	return audio_format.format != SampleFormat::DSD &&
-		 audio_format.format != SampleFormat::UNDEFINED;
-}
-
 class PreparedStartDelayFilter final : public PreparedFilter {
 	std::chrono::milliseconds time;
 	unsigned int level;
 	bool on_seek;
+
+	bool FormatSupported(const AudioFormat &audio_format) const noexcept {
+		return audio_format.format != SampleFormat::DSD &&
+			 audio_format.format != SampleFormat::UNDEFINED;
+	}
 
 public:
 	explicit PreparedStartDelayFilter(std::chrono::milliseconds _time, unsigned int _level, bool _on_seek) noexcept
@@ -54,18 +52,18 @@ PreparedStartDelayFilter::Open(AudioFormat &audio_format)
 }
 
 static std::unique_ptr<PreparedFilter>
-start_delay_filter_init(const ConfigBlock &block)
+startdelay_filter_init(const ConfigBlock &block)
 {
 	unsigned int time = block.GetBlockValue("delay_ms", START_DELAY_DEFAULT_MS);
 	unsigned int level = block.GetBlockValue("noise_level", START_DELAY_NOISE_LEVEL_DEFAULT);
 	if (level > START_DELAY_NOISE_LEVEL_MAX)
-		throw std::runtime_error("level out of range");
+		throw FmtRuntimeError("noise_level ({}) out of range [0 - {}]", level, START_DELAY_NOISE_LEVEL_MAX);
 	bool on_seek = block.GetBlockValue("on_seek", false);
 
 	return std::make_unique<PreparedStartDelayFilter>(std::chrono::milliseconds(time), level, on_seek);
 }
 
-const FilterPlugin start_delay_filter_plugin = {
+const FilterPlugin startdelay_filter_plugin = {
 	"startdelay",
-	start_delay_filter_init,
+	startdelay_filter_init,
 };

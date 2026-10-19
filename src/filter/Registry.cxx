@@ -17,7 +17,7 @@ static constinit const FilterPlugin *const filter_plugins[] = {
 	&null_filter_plugin,
 	&route_filter_plugin,
 	&normalize_filter_plugin,
-	&start_delay_filter_plugin,
+	&startdelay_filter_plugin,
 #ifdef HAVE_LIBAVFILTER
 	&ffmpeg_filter_plugin,
 	&hdcd_filter_plugin,
