@@ -1505,7 +1505,7 @@ DSD formatted streams.
      - The delay time in milliseconds. The default delay is ``1250`` ms.
    * - **noise_level LEVEL**
      - Sets the loudness of the noise inserted during the delay, in
-       the range ``[0 - 255]``. A value of ``1`` generates noise at -90.3dBFS,
+       the range ``[0 - 255]``. A value of ``1`` generates noise at -90.3 dBFS,
        and ``255`` generates noise at -42.1 dBFS. Use the value ``0`` for
        silence. The default value is ``1``.
    * - **on_seek yes|no**
