@@ -54,10 +54,9 @@ StartDelayFilter::CreateNoise(const AudioFormat &format, std::uint8_t level) noe
 		: 1;
 	const float famp = float(level) / 32768.0f;
 
-	auto *dest = noise_buffer;
 	std::uint32_t rng = 0x9E3779B9u;
-	for (std::size_t i = 0; i < n_frames; ++i, dest += sample_size) {
-
+	auto dest = noise_buffer.begin();
+	for (std::size_t i = 0; i < n_frames; i++, dest += sample_size) {
 		/* vary the sign randomly */
 		rng ^= rng << 13;
 		rng ^= rng >> 17;
@@ -85,7 +84,6 @@ StartDelayFilter::CreateNoise(const AudioFormat &format, std::uint8_t level) noe
 		/* copy this sample to each channel */
 		for (auto c = 1; c < channels; c++, dest += sample_size)
 			std::memcpy(dest + sample_size, dest, sample_size);
-
 	}
 }
 
@@ -96,10 +94,10 @@ StartDelayFilter::FilterPCM(std::span<const std::byte> src)
 	{
 		initial_data = src;
 		auto next_chunk_size = noise_bytes - noise_bytes_read;
-		if (next_chunk_size > NOISE_BUFFER_BYTES)
-			next_chunk_size = NOISE_BUFFER_BYTES;
+		if (next_chunk_size > noise_buffer.size())
+			next_chunk_size = noise_buffer.size();
 		noise_bytes_read += next_chunk_size;
-		return std::span{ noise_buffer, next_chunk_size };
+		return std::span{noise_buffer.begin(), noise_buffer.begin() + next_chunk_size};
 	}
 
 	return src;
@@ -111,10 +109,10 @@ StartDelayFilter::ReadMore()
 	if (noise_bytes_read < noise_bytes)
 	{
 		auto next_chunk_size = noise_bytes - noise_bytes_read;
-		if (next_chunk_size > NOISE_BUFFER_BYTES)
-			next_chunk_size = NOISE_BUFFER_BYTES;
+		if (next_chunk_size > noise_buffer.size())
+			next_chunk_size = noise_buffer.size();
 		noise_bytes_read += next_chunk_size;
-		return std::span{ noise_buffer, next_chunk_size };
+		return std::span{noise_buffer.begin(), noise_buffer.begin() + next_chunk_size};
 	}
 
 	if (initial_data.size() != 0)

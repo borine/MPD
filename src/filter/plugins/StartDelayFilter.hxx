@@ -5,6 +5,7 @@
 
 #include "filter/Filter.hxx"
 
+#include <array>
 #include <chrono>
 
 /**
@@ -19,7 +20,7 @@ class StartDelayFilter final : public Filter {
 	static constexpr std::size_t NOISE_BUFFER_BYTES = 200 * 48 * 4 * 8;
 
 	std::size_t noise_bytes;
-	std::byte noise_buffer[NOISE_BUFFER_BYTES];
+	std::array<std::byte, NOISE_BUFFER_BYTES> noise_buffer;
 	std::span<const std::byte> initial_data;
 	std::size_t noise_bytes_read;
 	bool on_seek;
