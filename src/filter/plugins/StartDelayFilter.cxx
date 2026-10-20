@@ -8,8 +8,8 @@
 
 #include <cstring>
 
-static unsigned
-GetSampleBits(const AudioFormat &format) noexcept
+constexpr unsigned
+get_sample_bits(const AudioFormat &format) noexcept
 {
 	if (format.format == SampleFormat::S24_P32)
 		return 24;
@@ -32,7 +32,7 @@ StartDelayFilter::StartDelayFilter(const AudioFormat &audio_format,
 }
 
 /**
- * Fill a buffer with pseudo-random values.
+ * Fill the noise buffer with pseudo-random values.
  * Because this sound is not intended to be heard, only to inform the
  * device that the stream is active, we do not care about the uniformity of
  * the random value distribution nor the sequence length. So to optimize
@@ -42,7 +42,7 @@ StartDelayFilter::StartDelayFilter(const AudioFormat &audio_format,
 void
 StartDelayFilter::CreateNoise(const AudioFormat &format, std::uint8_t level) noexcept
 {
-	const unsigned sample_bits = GetSampleBits(format);
+	const unsigned sample_bits = get_sample_bits(format);
 	const size_t sample_size = format.GetSampleSize();
 	const uint8_t channels = format.channels;
 	const std::size_t frame_size = sample_size * channels;
@@ -83,7 +83,7 @@ StartDelayFilter::CreateNoise(const AudioFormat &format, std::uint8_t level) noe
 				dest[sample_size - 1 - b] = std::byte(u >> (8 * b));
 
 		/* copy this sample to each channel */
-		for (size_t s = 1; s < channels; s++, dest += sample_size)
+		for (auto c = 1; c < channels; c++, dest += sample_size)
 			std::memcpy(dest + sample_size, dest, sample_size);
 
 	}
