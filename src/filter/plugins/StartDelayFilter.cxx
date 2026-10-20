@@ -9,11 +9,11 @@
 #include <cstring>
 
 static unsigned
-GetSampleBits(SampleFormat format) noexcept
+GetSampleBits(const AudioFormat &format) noexcept
 {
-	if (format == SampleFormat::S24_P32)
+	if (format.format == SampleFormat::S24_P32)
 		return 24;
-	return sample_format_size(format) * CHAR_BIT;
+	return format.GetSampleSize() * CHAR_BIT;
 }
 
 StartDelayFilter::StartDelayFilter(const AudioFormat &audio_format,
@@ -22,46 +22,51 @@ StartDelayFilter::StartDelayFilter(const AudioFormat &audio_format,
 			 bool _on_seek) noexcept
 				:Filter(audio_format),
 				 noise_bytes(audio_format.TimeToSize(time)),
+				 noise_buffer{},
 				 initial_data(),
 				 noise_bytes_read(0),
 				 on_seek(_on_seek)
 {
 	if (level > 0)
-		CreateNoise(audio_format.format, level);
-	else
-		std::memset(noise_buffer, 0, NOISE_BUFFER_BYTES);
+		CreateNoise(audio_format, level);
 }
 
 /**
- * Fill a buffer with pseudo-random values
+ * Fill a buffer with pseudo-random values.
  * Because this sound is not intended to be heard, only to inform the
  * device that the stream is active, we do not care about the uniformity of
  * the random value distribution nor the sequence length. So to optimize
- * resource usage we generate a short random sequence using a simple
- * xorshift algorithm.
+ * resource usage we generate a short sequence representing a square wave of
+ * fixed amplitude and randomly varying wavelength.
  */
 void
-StartDelayFilter::CreateNoise(SampleFormat format, std::uint8_t level) noexcept
+StartDelayFilter::CreateNoise(const AudioFormat &format, std::uint8_t level) noexcept
 {
-	/* amplitude in LSBs of the native sample width */
 	const unsigned sample_bits = GetSampleBits(format);
+	const size_t sample_size = format.GetSampleSize();
+	const uint8_t channels = format.channels;
+	const std::size_t frame_size = sample_size * channels;
+	const std::size_t n_frames = NOISE_BUFFER_BYTES / frame_size;
+
+	/* amplitude in LSBs of the native sample width */
 	const std::int32_t amp = sample_bits >= 16
 		? std::int32_t(level) << (sample_bits - 16)
 		: 1;
 	const float famp = float(level) / 32768.0f;
 
-	const size_t sample_size = sample_format_size(format);
-	std::uint32_t rng = 0x9E3779B9u;
 	auto *dest = noise_buffer;
-	const std::size_t n_samples = NOISE_BUFFER_BYTES / sample_size;
-	for (std::size_t i = 0; i < n_samples; ++i, dest += sample_size) {
+	std::uint32_t rng = 0x9E3779B9u;
+	for (std::size_t i = 0; i < n_frames; ++i, dest += sample_size) {
+
+		/* vary the sign randomly */
 		rng ^= rng << 13;
 		rng ^= rng >> 17;
 		rng ^= rng << 5;
 		const bool negative = (rng >> 16) & 1;
 
+		/* create a 32-bit representation of the sample bits */
 		std::uint32_t u;
-		if (format == SampleFormat::FLOAT) {
+		if (format.format == SampleFormat::FLOAT) {
 			const float f = negative ? -famp : famp;
 			static_assert(sizeof(f) == sizeof(u));
 			std::memcpy(&u, &f, sizeof(u));
@@ -70,12 +75,17 @@ StartDelayFilter::CreateNoise(SampleFormat format, std::uint8_t level) noexcept
 		}
 
 		/* store the low "bytes" bytes of the (sign-extended)
-		   value in the native byte order */
+		   value into the noise buffer in native byte order */
 		for (unsigned b = 0; b < sample_size; ++b)
 			if constexpr (std::endian::native == std::endian::little)
 				dest[b] = std::byte(u >> (8 * b));
 			else
 				dest[sample_size - 1 - b] = std::byte(u >> (8 * b));
+
+		/* copy this sample to each channel */
+		for (size_t s = 1; s < channels; s++, dest += sample_size)
+			std::memcpy(dest + sample_size, dest, sample_size);
+
 	}
 }
 
