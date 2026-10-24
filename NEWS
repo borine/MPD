@@ -12,6 +12,8 @@ ver 0.25 (not yet released)
   - faad: output 32 bit floating point samples instead of 16 bit integer
   - psgplay: new plugin
   - vgmstream: new plugin
+* filter
+  - startdelay: new filter to start a stream with a prelude of silence or noise
 * output
   - alsa: use hardware pause if available
   - pipewire: add option "reconnect_stream"
