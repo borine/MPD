@@ -2,16 +2,15 @@
 // Copyright The Music Player Daemon Project
 
 #include "StartDelayFilter.hxx"
-#include "filter/NullFilter.hxx"
-#include "filter/Prepared.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "pcm/Prng.hxx"
 
 #include <cstring>
+#include <memory>
 #include <utility>
 
-constexpr unsigned
-get_sample_bits(const AudioFormat &format) noexcept
+static unsigned
+GetSampleBits(const AudioFormat &format) noexcept
 {
 	if (format.format == SampleFormat::S24_P32)
 		return 24;
@@ -44,7 +43,7 @@ StartDelayFilter::StartDelayFilter(const AudioFormat &audio_format,
 void
 StartDelayFilter::CreateNoise(const AudioFormat &format, std::uint8_t level) noexcept
 {
-	const unsigned sample_bits = get_sample_bits(format);
+	const unsigned sample_bits = GetSampleBits(format);
 	const size_t sample_size = format.GetSampleSize();
 	const std::size_t frame_size = sample_size * format.channels;
 	const std::size_t n_frames = noise_buffer.size() / frame_size;

@@ -5,7 +5,6 @@
 #include "StartDelayFilter.hxx"
 #include "filter/FilterPlugin.hxx"
 #include "filter/NullFilter.hxx"
-#include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
 #include "config/Block.hxx"
 #include "lib/fmt/RuntimeError.hxx"
