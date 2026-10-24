@@ -5,10 +5,9 @@
 #include "filter/NullFilter.hxx"
 #include "filter/Prepared.hxx"
 #include "pcm/AudioFormat.hxx"
+#include "pcm/Prng.hxx"
 
 #include <cstring>
-#include <functional>
-#include <random>
 #include <utility>
 
 constexpr unsigned
@@ -39,8 +38,9 @@ StartDelayFilter::StartDelayFilter(const AudioFormat &audio_format,
  * This sound is not intended to be heard, only to inform the device that the
  * stream is active. So we optimize resource usage by generating a short
  * sequence representing a square wave of fixed amplitude and randomly varying
- * wavelength. The resulting noise is a quiet "buzz" and not white noise.
- */
+ * wavelength.
+ * @param format the desired format of the noise
+ * @param level adjusts the amplitude of the noise */
 void
 StartDelayFilter::CreateNoise(const AudioFormat &format, std::uint8_t level) noexcept
 {
@@ -59,8 +59,8 @@ StartDelayFilter::CreateNoise(const AudioFormat &format, std::uint8_t level) noe
 		: 1;
 	const float famplitude = float(level) / 32768.0f;
 
-	/* generator of random boolean values */
-	auto rng = std::bind(std::uniform_int_distribution<>(0, 1), std::default_random_engine());
+	/* random number generator state */
+	unsigned long rng = 0;
 
 	/* the address within the byte array to write the generated frame. */
 	auto dest = noise_buffer.data();
@@ -68,9 +68,10 @@ StartDelayFilter::CreateNoise(const AudioFormat &format, std::uint8_t level) noe
 	for (std::size_t i = 0; i < n_frames; i++, dest += sample_size) {
 
 		/* vary the sign randomly */
-        const bool negative = rng();
+		rng = pcm_prng(rng);
+		const bool negative = rng & 0x10000;
 
-		/* write the value to the byte array */
+		/* write the sample value to the byte array */
 		switch (format.format) {
 			case SampleFormat::S8: {
 				const int8_t val = negative ? -amplitude : amplitude;
