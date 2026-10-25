@@ -1487,13 +1487,13 @@ Reroute channels.
 startdelay
 ----------
 
-Insert a duration of silence or pseudo white noise immediately before
+Insert a duration of silence or low-level noise immediately before
 the stream starts. Some devices drop samples at the start of playback
 as they perform a handshake protocol or power up idle circuits; some
 require some non-zero samples before they begin their handshake. Use
 this filter to ensure the start of the first track is not dropped.
-This plugin is unable to create a delay for DSD and has no effect with
-DSD formatted streams.
+This plugin is unable to create noise for DSD and so the delay is
+always filled with silence for DSD formatted streams.
 
 .. list-table::
    :widths: 20 80
@@ -1507,7 +1507,8 @@ DSD formatted streams.
      - Sets the loudness of the noise inserted during the delay, in
        the range ``[0 - 255]``. A value of ``1`` generates noise at -90.3 dBFS,
        and ``255`` generates noise at -42.1 dBFS. Use the value ``0`` for
-       silence. The default value is ``1``.
+       silence. The default value is ``1``. This option is ignored for DSD
+       streams.
    * - **on_seek yes|no**
      - When ``yes`` also delay the start after seeking. The default
        value is ``no``.

@@ -4,6 +4,7 @@
 #include "StartDelayFilter.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "pcm/Prng.hxx"
+#include "pcm/Silence.hxx"
 
 #include <cstring>
 #include <memory>
@@ -30,6 +31,8 @@ StartDelayFilter::StartDelayFilter(const AudioFormat &audio_format,
 {
 	if (level > 0)
 		CreateNoise(audio_format, level);
+	else
+		PcmSilence({ noise_buffer.data(), noise_buffer.size() }, audio_format.format);
 }
 
 /**
@@ -120,7 +123,7 @@ StartDelayFilter::FilterPCM(std::span<const std::byte> src)
 		if (next_chunk_size > noise_buffer.size())
 			next_chunk_size = noise_buffer.size();
 		noise_bytes_read += next_chunk_size;
-		return std::span{noise_buffer.begin(), noise_buffer.begin() + next_chunk_size};
+		return std::span{noise_buffer.data(), next_chunk_size};
 	}
 
 	return src;
