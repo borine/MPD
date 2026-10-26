@@ -24,6 +24,7 @@ class StartDelayFilter final : public Filter {
 	std::span<const std::byte> initial_data;
 	std::size_t noise_bytes_read;
 	bool on_seek;
+	std::size_t buffer_bytes;
 
 public:
 	/**
@@ -43,6 +44,6 @@ public:
 	void Reset() noexcept override;
 
 private:
-	void CreateNoise(const AudioFormat &format, std::uint8_t level) noexcept;
+	void CreateNoise(size_t buffer_frames,  std::uint8_t level) noexcept;
 
 };

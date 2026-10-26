@@ -18,21 +18,24 @@ GetSampleBits(const AudioFormat &format) noexcept
 	return format.GetSampleSize() * CHAR_BIT;
 }
 
-StartDelayFilter::StartDelayFilter(const AudioFormat &audio_format,
+StartDelayFilter::StartDelayFilter(const AudioFormat &format,
 			 std::chrono::milliseconds time,
 			 std::uint8_t level,
 			 bool _on_seek) noexcept
-				:Filter(audio_format),
-				 noise_bytes(audio_format.TimeToSize(time)),
-				 noise_buffer{},
+				:Filter(format),
+				 noise_bytes(format.TimeToSize(time)),
 				 initial_data(),
 				 noise_bytes_read(0),
 				 on_seek(_on_seek)
 {
+	const std::size_t frame_size = format.GetFrameSize();
+	std::size_t buffer_frames = (noise_buffer.size() / frame_size);
+	buffer_bytes = buffer_frames * frame_size;
+
 	if (level > 0)
-		CreateNoise(audio_format, level);
+		CreateNoise(buffer_frames, level);
 	else
-		PcmSilence({ noise_buffer.data(), noise_buffer.size() }, audio_format.format);
+		PcmSilence({ noise_buffer.data(), buffer_bytes }, format.format);
 }
 
 /**
@@ -44,12 +47,10 @@ StartDelayFilter::StartDelayFilter(const AudioFormat &audio_format,
  * @param format the desired format of the noise
  * @param level adjusts the amplitude of the noise */
 void
-StartDelayFilter::CreateNoise(const AudioFormat &format, std::uint8_t level) noexcept
+StartDelayFilter::CreateNoise(std::size_t buffer_frames, std::uint8_t level) noexcept
 {
-	const unsigned sample_bits = GetSampleBits(format);
-	const size_t sample_size = format.GetSampleSize();
-	const std::size_t frame_size = sample_size * format.channels;
-	const std::size_t n_frames = noise_buffer.size() / frame_size;
+	const unsigned sample_bits = GetSampleBits(out_audio_format);
+	const std::size_t sample_size = out_audio_format.GetSampleSize();
 
 	/* amplitude of the generated wave.
 	 * For integer formats with a sample size less than 16 bits the
@@ -67,33 +68,33 @@ StartDelayFilter::CreateNoise(const AudioFormat &format, std::uint8_t level) noe
 	/* the address within the byte array to write the generated frame. */
 	auto dest = noise_buffer.data();
 
-	for (std::size_t i = 0; i < n_frames; i++, dest += sample_size) {
+	for (std::size_t i = 0; i < buffer_frames; i++, dest += sample_size) {
 
 		/* vary the sign randomly */
 		rng = pcm_prng(rng);
 		const bool negative = rng & 0x10000;
 
 		/* write the sample value to the byte array */
-		switch (format.format) {
+		switch (out_audio_format.format) {
 			case SampleFormat::S8: {
-				const int8_t val = negative ? -amplitude : amplitude;
+				const std::int8_t val = negative ? -amplitude : amplitude;
 				std::memcpy(dest, &val, sizeof(val));
 				break;
 			}
 			case SampleFormat::S16: {
-				const int16_t val = negative ? -amplitude : amplitude;
+				const std::int16_t val = negative ? -amplitude : amplitude;
 				std::memcpy(dest, &val, sizeof(val));
 				break;
 			}
 			case SampleFormat::S32: {
-				const int32_t val = negative ? -amplitude : amplitude;
+				const std::int32_t val = negative ? -amplitude : amplitude;
 				std::memcpy(dest, &val, sizeof(val));
 				break;
 			}
 			case SampleFormat::S24_P32: {
-				const int32_t val = negative ?
+				const std::int32_t val = negative ?
 					/* extend the sign bit */
-					-amplitude | ~int32_t(0xffffff) :
+					-amplitude | ~std::int32_t(0xffffff) :
 					amplitude;
 				std::memcpy(dest, &val, sizeof(val));
 				break;
@@ -108,7 +109,7 @@ StartDelayFilter::CreateNoise(const AudioFormat &format, std::uint8_t level) noe
 		}
 
 		/* copy this sample to each channel */
-		for (auto c = 1; c < format.channels; c++, dest += sample_size)
+		for (auto c = 1; c < out_audio_format.channels; c++, dest += sample_size)
 			std::memcpy(dest + sample_size, dest, sample_size);
 	}
 }
@@ -120,8 +121,8 @@ StartDelayFilter::FilterPCM(std::span<const std::byte> src)
 	{
 		initial_data = src;
 		auto next_chunk_size = noise_bytes - noise_bytes_read;
-		if (next_chunk_size > noise_buffer.size())
-			next_chunk_size = noise_buffer.size();
+		if (next_chunk_size > buffer_bytes)
+			next_chunk_size = buffer_bytes;
 		noise_bytes_read += next_chunk_size;
 		return std::span{noise_buffer.data(), next_chunk_size};
 	}
@@ -135,8 +136,8 @@ StartDelayFilter::ReadMore()
 	if (noise_bytes_read < noise_bytes)
 	{
 		auto next_chunk_size = noise_bytes - noise_bytes_read;
-		if (next_chunk_size > noise_buffer.size())
-			next_chunk_size = noise_buffer.size();
+		if (next_chunk_size > buffer_bytes)
+			next_chunk_size = buffer_bytes;
 		noise_bytes_read += next_chunk_size;
 		return std::span{noise_buffer.begin(), noise_buffer.begin() + next_chunk_size};
 	}
